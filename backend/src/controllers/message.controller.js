@@ -47,7 +47,10 @@ export const sendMessage = async (req, res) => {
             image: imageUrl,
         });
         await newMessage.save();
-        //socket.io saa yaha paa banana hai
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
         res.status(201).json(newMessage);
     } catch (error) {
         console.error("Error in sendMessage controller: ", error.message);
