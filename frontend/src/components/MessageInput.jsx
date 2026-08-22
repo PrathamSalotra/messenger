@@ -32,17 +32,23 @@ const MessageInput = () => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
 
+    // Capture current values
+    const currentText = text.trim();
+    const currentImage = imagePreview;
+
+    // Clear form immediately to prevent double-submissions
+    setText("");
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
     try {
       await sendMessage({
-        text: text.trim(),
-        image: imagePreview,
+        text: currentText,
+        image: currentImage,
       });
-
-      setText("");
-      setImagePreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
+      // If it fails, optionally restore the input (omitted for simplicity or we can add it)
     }
   };
 

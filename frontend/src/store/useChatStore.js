@@ -34,14 +34,18 @@ export const useChatStore = create((set, get) => ({
     }
   },
   sendMessage: async (messageData) => {
-    const { selectedUser, messages } = get();
+    const { selectedUser } = get();
     try {
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
+      
+      // Get the freshest messages state after the async operation completes
+      const currentMessages = get().messages;
+      
       // Check if message already exists (in case it was received via socket)
-      const messageExists = messages.some(msg => msg._id === res.data._id);
+      const messageExists = currentMessages.some(msg => msg._id === res.data._id);
       if (!messageExists) {
         // Add message and sort by createdAt to maintain chronological order
-        const updatedMessages = [...messages, res.data].sort((a, b) => {
+        const updatedMessages = [...currentMessages, res.data].sort((a, b) => {
           const dateA = new Date(a.createdAt);
           const dateB = new Date(b.createdAt);
           return dateA - dateB;
@@ -49,7 +53,7 @@ export const useChatStore = create((set, get) => ({
         set({ messages: updatedMessages });
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to send message");
     }
   },
 
