@@ -88,7 +88,7 @@ const ChatContainer = () => {
                 {formatMessageTime(message.createdAt)}
               </time>
             </div>
-            <div className="chat-bubble flex flex-col">
+            <div className={`chat-bubble flex flex-col ${isCurrentUserMessage ? "chat-bubble-primary" : "bg-base-200 text-base-content"}`}>
               {message.image && (
                 <img
                   src={message.image}
