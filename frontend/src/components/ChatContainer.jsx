@@ -48,21 +48,38 @@ const ChatContainer = () => {
       <ChatHeader />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+        {messages.map((message) => {
+          // Convert IDs to strings for reliable comparison
+          const messageSenderId = String(message.senderId);
+          const currentUserId = String(authUser?._id || "");
+          const isCurrentUserMessage = messageSenderId === currentUserId;
+          
+          // Determine profile picture - handle empty strings explicitly
+          const getProfilePic = (user) => {
+            if (!user) return "/avatar.png";
+            const pic = user.profilePic;
+            return pic && pic.trim() !== "" ? pic : "/avatar.png";
+          };
+          
+          const profilePic = isCurrentUserMessage 
+            ? getProfilePic(authUser)
+            : getProfilePic(selectedUser);
+          
+          return (
           <div
             key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+            className={`chat ${isCurrentUserMessage ? "chat-end" : "chat-start"}`}
             ref={messageEndRef}
           >
             <div className=" chat-image avatar">
               <div className="size-10 rounded-full border">
                 <img
-                  src={
-                    message.senderId === authUser._id
-                      ? authUser.profilePic || "/avatar.png"
-                      : selectedUser.profilePic || "/avatar.png"
-                  }
+                  src={profilePic}
                   alt="profile pic"
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    e.target.src = "/avatar.png";
+                  }}
                 />
               </div>
             </div>
@@ -82,7 +99,8 @@ const ChatContainer = () => {
               {message.text && <p>{message.text}</p>}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <MessageInput />
